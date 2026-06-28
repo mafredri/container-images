@@ -1,0 +1,23 @@
+services:
+  obsidian-sync:
+    image: ghcr.io/mafredri/obsidian-headless
+    restart: unless-stopped
+    environment:
+      OBSIDIAN_AUTH_TOKEN: ${OBSIDIAN_AUTH_TOKEN-}
+    volumes:
+      - config:/config
+      - /path/to/vault:/vaults
+
+  # For multiple vaults, add a service per vault:
+  # obsidian-sync-work:
+  #   image: ghcr.io/mafredri/obsidian-headless
+  #   restart: unless-stopped
+  #   environment:
+  #     OBSIDIAN_AUTH_TOKEN: ${OBSIDIAN_AUTH_TOKEN-}
+  #   command: ['sync', '--continuous', '--path', '/vaults/work']
+  #   volumes:
+  #     - config:/config
+  #     - /path/to/vaults/work:/vaults/work
+
+volumes:
+  config:

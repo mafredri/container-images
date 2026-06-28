@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: images/rdap-fi-proxy/go.mod
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Install linters
+        run: |
+          go install github.com/google/yamlfmt/cmd/yamlfmt@latest
+          go install github.com/rhysd/actionlint/cmd/actionlint@latest
+          go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: YAML format check
+        run: make fmt/check
+
+      - name: GitHub Actions lint
+        run: make lint/actions
+
+      - name: Renovate extraction check
+        run: make renovate/check
+
+      - name: Dockerfile lint
+        uses: hadolint/hadolint-action@v3.2.0
+        with:
+          dockerfile: Dockerfile
+          recursive: true
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Go format check
+        working-directory: images/rdap-fi-proxy
+        run: test -z "$(gofmt -l .)"
+
+      - name: Shell lint
+        run: make lint/sh
+
+      - name: Go test
+        run: make test/go
+
+      - name: Go vet
+        run: make lint/go

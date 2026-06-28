@@ -1,0 +1,11 @@
+services:
+  rdap-fi-proxy:
+    build: .
+    restart: unless-stopped
+    environment:
+      ADDR: ":8080"
+      UPSTREAM_RDAP_URL: "https://rdap.fi/rdap/rdap"
+      WHOIS_ADDR: "whois.fi:43"
+      CACHE_TTL: "6h"
+    ports:
+      - "8080:8080"

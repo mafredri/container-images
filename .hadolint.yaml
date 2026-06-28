@@ -1,0 +1,4 @@
+failure-threshold: warning
+ignored:
+  # Pinning apk package versions in small application images creates noisy churn.
+  - DL3018

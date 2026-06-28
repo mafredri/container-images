@@ -1,0 +1,16 @@
+services:
+  uptime-kuma:
+    environment:
+      NODE_OPTIONS: "--require /app/data/rdap-fi/kuma-fetch-override.js"
+      RDAP_FI_PROXY_PREFIX: "http://rdap-fi-proxy:8080/rdap/rdap/domain/"
+    volumes:
+      - ./kuma-fetch-override.js:/app/data/rdap-fi/kuma-fetch-override.js:ro
+
+  rdap-fi-proxy:
+    build: .
+    restart: unless-stopped
+    environment:
+      ADDR: ":8080"
+      UPSTREAM_RDAP_URL: "https://rdap.fi/rdap/rdap"
+      WHOIS_ADDR: "whois.fi:43"
+      CACHE_TTL: "6h"
