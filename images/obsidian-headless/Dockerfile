@@ -14,7 +14,7 @@ RUN bun install --global obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
 
 # For now, using Node.js because better-sqlite3 is not supported in Bun.
 # FROM oven/bun:1-alpine
-FROM node:24-alpine3.23
+FROM node:24.18.0-alpine3.23
 
 RUN apk add --no-cache \
 	dumb-init
