@@ -15,17 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.0
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v6.5.0
         with:
           go-version-file: images/rdap-fi-proxy/go.mod
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
-          node-version: "24"
+          node-version: "24.18.0"
 
       - name: Install linters
         run: |
@@ -46,13 +46,13 @@ jobs:
         run: make renovate/check
 
       - name: Dockerfile lint
-        uses: hadolint/hadolint-action@v3.2.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
           recursive: true
 
       - name: Secret scan
-        uses: gitleaks/gitleaks-action@v3
+        uses: gitleaks/gitleaks-action@v3.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
