@@ -6,7 +6,7 @@ RUN apk add --no-cache \
 	g++
 
 # renovate: datasource=npm depName=obsidian-headless
-ARG OBSIDIAN_HEADLESS_VERSION=0.0.13
+ARG OBSIDIAN_HEADLESS_VERSION=0.0.14
 
 ENV BUN_INSTALL=/usr/local
 
