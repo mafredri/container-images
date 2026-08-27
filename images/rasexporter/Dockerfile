@@ -1,4 +1,4 @@
-FROM golang:1.26-trixie AS builder
+FROM golang:1.27-trixie AS builder
 
 # renovate: datasource=go depName=git.bofh.at/mla/rasexporter
 ARG RASEXPORTER_VERSION=v0.0.0-20210602084929-8676061d8c03
