@@ -26,6 +26,7 @@ jobs:
           - obsidian-headless
           - rdap-fi-proxy
           - rasexporter
+          - avahi
 
     steps:
       - name: Checkout

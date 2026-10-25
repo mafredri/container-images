@@ -7,6 +7,7 @@ My personal container images.
 - `ghcr.io/mafredri/obsidian-headless`
 - `ghcr.io/mafredri/rdap-fi-proxy`
 - `ghcr.io/mafredri/rasexporter`
+- `ghcr.io/mafredri/avahi`
 
 ## Local checks
 
