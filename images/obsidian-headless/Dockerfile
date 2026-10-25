@@ -12,7 +12,9 @@ RUN apk add --no-cache \
 # renovate: datasource=npm depName=obsidian-headless
 ARG OBSIDIAN_HEADLESS_VERSION=0.0.14
 
-RUN npm install --global obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
+# npm runs no install scripts unless allowed, and better-sqlite3 fetches or
+# builds its addon in one.
+RUN npm install --global --allow-scripts=better-sqlite3 obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
 
 FROM node:24.22.1-alpine3.23
 
@@ -24,7 +26,10 @@ COPY --from=build /usr/local/lib/node_modules/obsidian-headless /usr/local/lib/n
 ENV HOME=/config \
 	XDG_CONFIG_HOME=/config
 
+# Opening a database fails the build when the addon does not load on this
+# Node.
 RUN ln -s ../lib/node_modules/obsidian-headless/cli.js /usr/local/bin/ob \
+	&& node -e 'const load = require("node:module").createRequire("/usr/local/lib/node_modules/obsidian-headless/cli.js"); new (load("better-sqlite3"))(":memory:").close()' \
 	&& install -d -m 0777 /vaults /config
 
 WORKDIR /vaults
