@@ -1,5 +1,9 @@
-FROM oven/bun:1-alpine AS build
+# Installed and run on the same Node image, so better-sqlite3's native addon
+# is built for the runtime's ABI. Bun reports a newer Node version than this
+# runtime since Bun 1.4, so an addon it builds does not load here.
+FROM node:24.22.1-alpine3.23 AS build
 
+# For building better-sqlite3 when no prebuilt addon matches.
 RUN apk add --no-cache \
 	python3 \
 	make \
@@ -8,26 +12,20 @@ RUN apk add --no-cache \
 # renovate: datasource=npm depName=obsidian-headless
 ARG OBSIDIAN_HEADLESS_VERSION=0.0.14
 
-ENV BUN_INSTALL=/usr/local
+RUN npm install --global obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
 
-RUN bun install --global obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
-
-# For now, using Node.js because better-sqlite3 is not supported in Bun.
-# FROM oven/bun:1-alpine
 FROM node:24.22.1-alpine3.23
 
 RUN apk add --no-cache \
 	dumb-init
 
-COPY --from=build /usr/local/install/global /usr/local/install/global
-COPY --from=build /usr/local/bin/ob /usr/local/bin/
-COPY --from=build /usr/local/install/global/node_modules/obsidian-headless/package.json /usr/local/bin/package.json
+COPY --from=build /usr/local/lib/node_modules/obsidian-headless /usr/local/lib/node_modules/obsidian-headless
 
-ENV NODE_PATH=/usr/local/install/global/node_modules \
-	HOME=/config \
+ENV HOME=/config \
 	XDG_CONFIG_HOME=/config
 
-RUN install -d -m 0777 /vaults /config
+RUN ln -s ../lib/node_modules/obsidian-headless/cli.js /usr/local/bin/ob \
+	&& install -d -m 0777 /vaults /config
 
 WORKDIR /vaults
 
