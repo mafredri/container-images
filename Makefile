@@ -11,6 +11,7 @@ RENOVATE ?= npx --yes renovate@latest
 GO_DIR := images/rdap-fi-proxy
 DOCKERFILES := $(shell find images -name Dockerfile -type f | sort)
 SHELL_FILES := $(shell find . -path ./.git -prune -o -type f -name '*.sh' -print | sort)
+IMAGES ?= $(patsubst images/%/Dockerfile,%,$(DOCKERFILES))
 
 .PHONY: ci
 ci: fmt/check lint test security/secrets renovate/check
@@ -70,6 +71,13 @@ test: test/go
 .PHONY: test/go
 test/go:
 	cd $(GO_DIR) && $(GO) test ./...
+
+.PHONY: test/images
+test/images:
+	@for image in $(IMAGES); do \
+		docker build -t local/$$image:test images/$$image && \
+			images/$$image/test.sh local/$$image:test || exit 1; \
+	done
 
 .PHONY: security/secrets
 security/secrets:

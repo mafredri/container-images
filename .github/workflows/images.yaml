@@ -1,0 +1,127 @@
+name: Images
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      images:
+        description: Images to build, separated by spaces; empty builds every image
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: mafredri
+
+jobs:
+  # Build only the images that changed. Rebuilding an unchanged image would
+  # push a new digest for the same content.
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.select.outputs.images }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Select images
+        id: select
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          INPUT_IMAGES: ${{ inputs.images }}
+        run: |
+          case $EVENT/$GITHUB_REF in
+          pull_request/*)
+            # Build and test every image when the workflow or the selection
+            # script changes.
+            images=$(.github/scripts/changed-images.sh "$PR_BASE" HEAD \
+              .github/workflows/images.yaml .github/scripts/changed-images.sh)
+            ;;
+          push/refs/tags/*)
+            images=$(.github/scripts/changed-images.sh "" HEAD)
+            ;;
+          push/*)
+            images=$(.github/scripts/changed-images.sh --image-only "$PUSH_BEFORE" HEAD)
+            ;;
+          workflow_dispatch/*)
+            if [ -n "$INPUT_IMAGES" ]; then
+              images=$(jq -cn --arg names "$INPUT_IMAGES" '$names | split(" ") | map(select(. != ""))')
+            else
+              images=$(.github/scripts/changed-images.sh "" HEAD)
+            fi
+            ;;
+          esac
+          echo "images=$images" | tee -a "$GITHUB_OUTPUT"
+
+  image:
+    needs: select
+    if: needs.select.outputs.images != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.select.outputs.images) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.4.1
+
+      - name: Build
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: images/${{ matrix.image }}
+          load: true
+          tags: local/${{ matrix.image }}:test
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      - name: Test
+        run: images/${{ matrix.image }}/test.sh local/${{ matrix.image }}:test
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4.7.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Docker metadata
+        if: github.event_name != 'pull_request'
+        id: meta
+        uses: docker/metadata-action@v6.2.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+
+      # Rebuilds from the Build step's cache, so the pushed image has the
+      # same layers as the tested one.
+      - name: Push
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: images/${{ matrix.image }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
