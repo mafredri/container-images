@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.0
+        with:
+          # gitleaks scans a pull request's commits from their parent.
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v7.0.0
