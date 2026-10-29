@@ -1,7 +1,7 @@
 # Installed and run on the same Node image, so better-sqlite3's native addon
 # is built for the runtime's ABI. Bun reports a newer Node version than this
 # runtime since Bun 1.4, so an addon it builds does not load here.
-FROM node:24.22.1-alpine3.23 AS build
+FROM node:24.22.2-alpine3.23 AS build
 
 # For building better-sqlite3 when no prebuilt addon matches.
 RUN apk add --no-cache \
@@ -16,7 +16,7 @@ ARG OBSIDIAN_HEADLESS_VERSION=0.0.14
 # builds its addon in one.
 RUN npm install --global --allow-scripts=better-sqlite3 obsidian-headless@${OBSIDIAN_HEADLESS_VERSION}
 
-FROM node:24.22.1-alpine3.23
+FROM node:24.22.2-alpine3.23
 
 RUN apk add --no-cache \
 	dumb-init
