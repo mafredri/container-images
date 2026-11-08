@@ -1,4 +1,4 @@
-FROM alpine:3.24.3
+FROM alpine:3.24.4
 
 # The image's own services would advertise SSH. D-Bus is not running in the
 # container, and avahi-daemon exits at start while enable-dbus is on.
