@@ -6,7 +6,9 @@ SHFMT ?= shfmt
 SHELLCHECK ?= shellcheck
 HADOLINT ?= hadolint
 GITLEAKS ?= gitleaks
-RENOVATE ?= npx --yes renovate@latest
+# renovate: datasource=npm depName=renovate
+RENOVATE_VERSION := 44.222.4
+RENOVATE ?= npx --yes renovate@$(RENOVATE_VERSION)
 
 GO_DIR := images/rdap-fi-proxy
 DOCKERFILES := $(shell find images -name Dockerfile -type f | sort)
@@ -15,6 +17,11 @@ IMAGES ?= $(patsubst images/%/Dockerfile,%,$(DOCKERFILES))
 
 .PHONY: ci
 ci: fmt/check lint test security/secrets renovate/check
+
+# Installs yamlfmt, actionlint, and shfmt at the versions in tools/go.mod.
+.PHONY: tools
+tools:
+	cd tools && $(GO) install tool
 
 .PHONY: fmt
 fmt: fmt/yaml fmt/go fmt/sh

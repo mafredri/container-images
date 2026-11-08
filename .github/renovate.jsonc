@@ -1,8 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
   ],
+  // Rebase on every main change so each pull request is tested against the
+  // main it merges into.
+  "rebaseWhen": "behind-base-branch",
   "timezone": "Europe/Helsinki",
   "labels": [
     "dependencies"
@@ -18,6 +22,15 @@
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\nARG [A-Z0-9_]+=(?<currentValue>\\S+)"
+      ]
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)Makefile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[A-Z0-9_]+ :?= (?<currentValue>\\S+)"
       ]
     }
   ],
@@ -39,6 +52,26 @@
         "custom.regex"
       ],
       "groupName": "dockerfile app versions"
+    },
+    // Go records tool dependencies as indirect, which Renovate skips by
+    // default.
+    {
+      "matchFileNames": [
+        "tools/go.mod"
+      ],
+      "matchPackageNames": [
+        "github.com/google/yamlfmt",
+        "github.com/rhysd/actionlint",
+        "mvdan.cc/sh/v3"
+      ],
+      "enabled": true
+    },
+    {
+      "matchFileNames": [
+        "Makefile",
+        "tools/go.mod"
+      ],
+      "groupName": "CI tools"
     }
   ]
 }

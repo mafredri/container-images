@@ -12,6 +12,7 @@ My personal container images.
 ## Local checks
 
 ```sh
+make tools  # installs yamlfmt, actionlint, and shfmt from tools/go.mod
 make ci
 ```
 
@@ -69,3 +70,5 @@ Renovate tracks:
 - GitHub Actions versions in `.github/workflows/*.yaml`
 - Go modules in `images/rdap-fi-proxy`
 - Dockerfile ARG app versions annotated with `# renovate: ...`
+- CI tools: the Go linters in `tools/go.mod` and the Renovate CLI version in
+  the `Makefile`
