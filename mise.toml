@@ -20,7 +20,7 @@ shellcheck = "0.11.0"
 # Fail instead of downloading another Go when go.mod asks for a newer one.
 GOTOOLCHAIN = "local"
 
-[tasks.ci]
+[tasks.check]
 description = "Run every check. CI scans commits with gitleaks-action instead of security/secrets"
 depends = ["fmt/check", "lint", "test", "security/secrets", "renovate/check"]
 
