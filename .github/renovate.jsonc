@@ -23,15 +23,6 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\nARG [A-Z0-9_]+=(?<currentValue>\\S+)"
       ]
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Makefile$/"
-      ],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[A-Z0-9_]+ :?= (?<currentValue>\\S+)"
-      ]
     }
   ],
   "packageRules": [
@@ -53,23 +44,9 @@
       ],
       "groupName": "dockerfile app versions"
     },
-    // Go records tool dependencies as indirect, which Renovate skips by
-    // default.
     {
-      "matchFileNames": [
-        "tools/go.mod"
-      ],
-      "matchPackageNames": [
-        "github.com/google/yamlfmt",
-        "github.com/rhysd/actionlint",
-        "mvdan.cc/sh/v3"
-      ],
-      "enabled": true
-    },
-    {
-      "matchFileNames": [
-        "Makefile",
-        "tools/go.mod"
+      "matchManagers": [
+        "mise"
       ],
       "groupName": "CI tools"
     }

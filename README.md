@@ -11,23 +11,25 @@ My personal container images.
 
 ## Local checks
 
+[mise](https://mise.jdx.dev) installs the tools in `mise.toml` and runs the
+checks:
+
 ```sh
-make tools  # installs yamlfmt, actionlint, and shfmt from tools/go.mod
-make ci
+mise run ci
 ```
 
 ## Format
 
 ```sh
-make fmt
+mise run fmt
 ```
 
 ## Targeted checks
 
 ```sh
-make lint/sh
-make lint/dockerfile
-make renovate/check
+mise run lint/sh
+mise run lint/dockerfile
+mise run renovate/check
 ```
 
 ## Local build
@@ -43,8 +45,8 @@ image, and exits non-zero if the image does not work. To build and test
 images locally with Docker:
 
 ```sh
-make test/images
-make test/images IMAGES=avahi
+mise run test/images
+mise run test/images avahi
 ```
 
 ## Publishing
@@ -70,5 +72,4 @@ Renovate tracks:
 - GitHub Actions versions in `.github/workflows/*.yaml`
 - Go modules in `images/rdap-fi-proxy`
 - Dockerfile ARG app versions annotated with `# renovate: ...`
-- CI tools: the Go linters in `tools/go.mod` and the Renovate CLI version in
-  the `Makefile`
+- CI tools in `mise.toml`

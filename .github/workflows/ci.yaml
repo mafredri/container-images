@@ -20,51 +20,23 @@ jobs:
           # gitleaks scans a pull request's commits from their parent.
           fetch-depth: 0
 
-      - name: Set up Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: images/rdap-fi-proxy/go.mod
+      # The tools in mise.toml.
+      - name: Set up tools
+        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
 
-      - name: Set up Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "26.13.0"
+      - name: Format check
+        run: mise run fmt/check
 
-      - name: Install linters
-        run: make tools
+      - name: Lint
+        run: mise run lint
 
-      - name: Install shellcheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-
-      - name: YAML format check
-        run: make fmt/check
-
-      - name: GitHub Actions lint
-        run: make lint/actions
+      - name: Go test
+        run: mise run test
 
       - name: Renovate extraction check
-        run: make renovate/check
-
-      - name: Dockerfile lint
-        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: Dockerfile
-          recursive: true
+        run: mise run renovate/check
 
       - name: Secret scan
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Go format check
-        working-directory: images/rdap-fi-proxy
-        run: test -z "$(gofmt -l .)"
-
-      - name: Shell lint
-        run: make lint/sh
-
-      - name: Go test
-        run: make test/go
-
-      - name: Go vet
-        run: make lint/go

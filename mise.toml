@@ -1,0 +1,97 @@
+# Tools and tasks for development and CI (jdx/mise-action). Renovate updates
+# the tool versions in its CI tools group.
+[tools]
+"aqua:gitleaks/gitleaks" = "8.30.1"
+"aqua:google/yamlfmt" = "0.21.0"
+"aqua:hadolint/hadolint" = "2.15.1"
+# shfmt
+"aqua:mvdan/sh" = "3.14.1"
+actionlint = "1.7.12"
+# Keep at or above the go directive in images/rdap-fi-proxy/go.mod.
+go = "1.26.5"
+node = "26.13.0"
+# @yarnpkg/libzip 3.2.2 was published by hand without the provenance
+# attestation that 3.2.0 and 3.2.1 have, which mise's npm trust policy rejects.
+# Its gitHead matches the upstream @yarnpkg/libzip/3.2.2 tag.
+"npm:renovate" = { version = "44.222.4", trust_policy_excludes = ["@yarnpkg/libzip@3.2.2"] }
+shellcheck = "0.11.0"
+
+[env]
+# Fail instead of downloading another Go when go.mod asks for a newer one.
+GOTOOLCHAIN = "local"
+
+[tasks.ci]
+description = "Run every check. CI scans commits with gitleaks-action instead of security/secrets"
+depends = ["fmt/check", "lint", "test", "security/secrets", "renovate/check"]
+
+[tasks.fmt]
+description = "Format YAML, Go, and shell scripts"
+depends = ["fmt/yaml", "fmt/go", "fmt/sh"]
+
+[tasks."fmt/yaml"]
+run = "yamlfmt ."
+
+[tasks."fmt/go"]
+dir = "images/rdap-fi-proxy"
+run = "gofmt -w ."
+
+[tasks."fmt/sh"]
+run = "git ls-files -co --exclude-standard '*.sh' | xargs -r shfmt -w"
+
+[tasks."fmt/check"]
+description = "Check formatting of YAML, Go, and shell scripts"
+depends = ["fmt/check-yaml", "fmt/check-go", "fmt/check-sh"]
+
+[tasks."fmt/check-yaml"]
+run = "yamlfmt -lint ."
+
+[tasks."fmt/check-go"]
+dir = "images/rdap-fi-proxy"
+run = 'unformatted=$(gofmt -l .); if [ -n "$unformatted" ]; then printf "%s\n" "$unformatted"; exit 1; fi'
+
+[tasks."fmt/check-sh"]
+run = "git ls-files -co --exclude-standard '*.sh' | xargs -r shfmt -d"
+
+[tasks.lint]
+description = "Lint workflows, Dockerfiles, shell scripts, and Go"
+depends = ["lint/actions", "lint/dockerfile", "lint/sh", "lint/go"]
+
+[tasks."lint/actions"]
+run = "actionlint"
+
+[tasks."lint/dockerfile"]
+run = "git ls-files -co --exclude-standard 'images/*/Dockerfile' | xargs hadolint"
+
+[tasks."lint/sh"]
+run = "git ls-files -co --exclude-standard '*.sh' | xargs -r shellcheck"
+
+[tasks."lint/go"]
+dir = "images/rdap-fi-proxy"
+run = "go vet ./..."
+
+[tasks.test]
+description = "Run the Go tests"
+depends = ["test/go"]
+
+[tasks."test/go"]
+dir = "images/rdap-fi-proxy"
+run = "go test ./..."
+
+[tasks."test/images"]
+description = "Build images with Docker and run each image's test.sh"
+usage = 'arg "[image]" var=#true help="Images to test (default: every image)"'
+run = '''
+set -eu
+images=${usage_image:-$(cd images && ls -d */ | tr -d /)}
+for image in $images; do
+	docker build -t "local/$image:test" "images/$image"
+	"images/$image/test.sh" "local/$image:test"
+done
+'''
+
+[tasks."security/secrets"]
+run = "gitleaks dir --redact ."
+
+[tasks."renovate/check"]
+description = "Validate the Renovate config and check that it extracts dependencies"
+run = "renovate --platform=local --dry-run=extract --require-config=required --config-validation-error=true --onboarding=false"
