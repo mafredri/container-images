@@ -125,3 +125,16 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image }}
+
+  # Branch rules require this job: the image jobs are named after the images
+  # that changed, and are skipped when none did.
+  result:
+    name: images
+    needs: [select, image]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check select and image results
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: jq -e 'all(. == "success" or . == "skipped")' <<<"$RESULTS"
