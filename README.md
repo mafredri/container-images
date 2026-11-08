@@ -15,7 +15,7 @@ My personal container images.
 checks:
 
 ```sh
-mise run ci
+mise run check
 ```
 
 ## Format

@@ -128,8 +128,7 @@ jobs:
 
   # Branch rules require this job: the image jobs are named after the images
   # that changed, and are skipped when none did.
-  result:
-    name: images
+  images:
     needs: [select, image]
     if: always()
     runs-on: ubuntu-latest
