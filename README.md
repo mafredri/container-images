@@ -8,6 +8,7 @@ My personal container images.
 - `ghcr.io/mafredri/rdap-fi-proxy`
 - `ghcr.io/mafredri/rasexporter`
 - `ghcr.io/mafredri/avahi`
+- `ghcr.io/mafredri/caddy`
 
 ## Local checks
 
