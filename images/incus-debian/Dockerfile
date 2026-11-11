@@ -47,7 +47,7 @@ RUN systemctl mask \
 		console-getty.service \
 	&& systemctl enable docker.service containerd.service \
 	&& : >/etc/machine-id \
-	&& rm -f /var/lib/dbus/machine-id /etc/hostname
+	&& rm -f /var/lib/dbus/machine-id
 
 # systemd as PID 1. Incus starts the container with the entrypoint as init
 # only when it is exactly /sbin/init.

@@ -4,7 +4,7 @@
 # systemd cannot boot as PID 1 under Docker in CI, so this checks what Incus
 # relies on to boot the image as a system container:
 #   - the entrypoint is /sbin/init, and it is systemd,
-#   - the machine ID is empty and there is no /etc/hostname,
+#   - the machine ID is empty,
 #   - nothing in the image manages the network or name resolution,
 #   - Docker and containerd are installed and enabled.
 set -euo pipefail
@@ -21,7 +21,6 @@ docker run --rm --entrypoint /bin/bash "$image" -euo pipefail -c '
 fail() { echo "FAIL: $*" >&2; exit 1; }
 [ "$(readlink -f /sbin/init)" = /usr/lib/systemd/systemd ] || fail "/sbin/init is not systemd"
 [ ! -s /etc/machine-id ] || fail "/etc/machine-id is not empty"
-[ ! -e /etc/hostname ] || fail "/etc/hostname exists"
 for unit in systemd-networkd.service systemd-resolved.service systemd-timesyncd.service; do
 	[ "$(readlink /etc/systemd/system/$unit)" = /dev/null ] || fail "$unit is not masked"
 done
