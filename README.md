@@ -9,6 +9,7 @@ My personal container images.
 - `ghcr.io/mafredri/rasexporter`
 - `ghcr.io/mafredri/avahi`
 - `ghcr.io/mafredri/caddy`
+- `ghcr.io/mafredri/incus-debian`
 
 ## Local checks
 
