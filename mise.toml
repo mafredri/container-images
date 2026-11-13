@@ -8,12 +8,12 @@
 "aqua:mvdan/sh" = "3.14.1"
 actionlint = "1.7.12"
 # Keep at or above the go directive in images/rdap-fi-proxy/go.mod.
-go = "1.27.3"
-node = "26.13.0"
+go = "1.27.4"
+node = "26.13.1"
 # @yarnpkg/libzip 3.2.2 was published by hand without the provenance
 # attestation that 3.2.0 and 3.2.1 have, which mise's npm trust policy rejects.
 # Its gitHead matches the upstream @yarnpkg/libzip/3.2.2 tag.
-"npm:renovate" = { version = "44.222.4", trust_policy_excludes = ["@yarnpkg/libzip@3.2.2"] }
+"npm:renovate" = { version = "44.239.1", trust_policy_excludes = ["@yarnpkg/libzip@3.2.2"] }
 shellcheck = "0.11.0"
 
 [env]
